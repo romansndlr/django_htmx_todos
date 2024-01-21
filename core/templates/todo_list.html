@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Todo List</title>
+    <script src="https://unpkg.com/htmx.org@1.9.10"
+            integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC"
+            crossorigin="anonymous"></script>
+  </head>
+  <body hx-boost="true">
+    <h1>Todo List</h1>
+    <ul>
+      {% for todo in todos %}
+        <li>
+          <form>
+            <input name="page" type="hidden" value="{{ page_obj.number }}">
+            <button name="selected-todo"
+                    {% if selected_todo.id == todo.id %}disabled{% endif %}
+                    value="{{ todo.id }}">{{ todo.title }}</button>
+          </form>
+        </li>
+      {% endfor %}
+    </ul>
+    <div class="pagination">
+      <span class="step-links">
+        {% if page_obj.has_previous %}
+          <a href="?page=1">&laquo; first</a>
+          <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+        {% endif %}
+        <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.</span>
+        {% if page_obj.has_next %}
+          <a href="?page={{ page_obj.next_page_number }}">next</a>
+          <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+        {% endif %}
+      </span>
+    </div>
+    <div>
+      {% if selected_todo %}
+        <h2>Selected Todo</h2>
+        <p>
+          {{ selected_todo.title }}
+          <form method="post" action="{% url "todo_update" selected_todo.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            <button name="completed"
+                    value="{% if selected_todo.completed %}False{% else %}True{% endif %}">
+              Mark as {{ todo.completed }}
+              {% if selected_todo.completed %}
+                Uncompleted
+              {% else %}
+                Completed
+              {% endif %}
+            </button>
+          </form>
+        </p>
+      {% endif %}
+    </div>
+  </body>
+</html>
